@@ -1,0 +1,357 @@
+// Coder/Developer: Jefferson Brackman & Garrett Nash
+// Class: COP 2006-13969, Spring 2024
+// Date: April 8, 2024
+// Description: Simple Banking system that stores and saves the multiple pieces of data in a text file.
+// Logs: April 8, 2024 finished the code and commented
+/*
+For file handling in C++:
+
+"C++ File I/O" from GeeksforGeeks: https://www.geeksforgeeks.org/c-file-io/
+For error handling in input validation:
+
+"C++ Input/Output" from Tutorialspoint: https://www.tutorialspoint.com/cplusplus/cpp_input_output.htm
+"C++ Standard Library - Input/Output with files" from cplusplus.com: http://www.cplusplus.com/doc/tutorial/files/
+For string manipulation and formatting:
+
+"C++ String Manipulation" from Programiz: https://www.programiz.com/cpp-programming/string
+"Manipulators in C++" from GeeksforGeeks: https://www.geeksforgeeks.org/manipulators-in-c-with-examples/
+For general C++ programming concepts:
+
+"C++ Programming Language" by Bjarne Stroustrup
+"Effective C++" by Scott Meyers
+
+Brackman Jefferson , 2024, "amortSched", FGCU
+
+*/
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <iomanip>
+
+
+// Function to create a new account
+void createAccount() {
+    /* String variable named username, and password. Double variable called balance that is set to the value of 0.0.
+     * Asks the user for the username and password. Each are stored to their respective variable. */
+    std::string username, password;
+    double balance = 0.0;
+    std::cout << "Enter a username: " << std::endl;
+    std::cin >> username;
+    std::cout << "Enter a password: " << std::endl;;
+    std::cin >> password;
+
+    // Save username and balance to clientdata1.txt
+    std::ofstream outfile("clientdata1.txt", std::ios::app);
+
+    /* If statement that checks if the file is open, if it is, it'll store the username to the text file called
+     * clientdata1.txt and close the file. If it isn't open it'll give the error below in the else statement.*/
+    if (outfile.is_open()) {
+        outfile << username << "\n";
+        outfile.close();
+    }
+    else {
+        std::cerr << "Unable to open file." << std::endl;
+    }
+
+    // Save password to clientpass.txt
+    std::ofstream passfile("clientpass.txt", std::ios::app);
+    /* If statement that checks if the file is open, if it is, it'll store the username, and password to the text file called
+     * clientpass.txt and close the file. If it isn't open it'll give the error below in the else statement.*/
+    if (passfile.is_open()) {
+        passfile << username << " " << password << "\n";
+        passfile.close();
+    }
+    else {
+        std::cerr << "Unable to open password file." << std::endl;
+    }
+
+    // Save balance to clientBal2.txt
+    std::ofstream balfile("clientBal2.txt", std::ios::app);
+    /* If statement that checks if the file is open, if it is, it'll store the balance to the text file called
+     * clientBal2.txt and close the file. If it isn't open it'll give the error below in the else statement.*/
+    if (balfile.is_open()) {
+        balfile << username << " " << balance << "\n";
+        balfile.close();
+    }
+    else {
+        std::cerr << "Unable to open balance file." << std::endl;
+    }
+}
+
+/* bool login function that takes parameters username, and password that have the memory address of the variables in the
+ * main function. */
+bool login(std::string& username, std::string& password) {
+
+    /* String variables called u and p. When the function is run it'll ask the user for the username and password,
+     * which each get stored in the variables u and p.*/
+    std::string u, p;
+    std::cout << "Enter your username: " << std::endl;
+    std::cin >> username;
+    std::cout << "Enter your password: " << std::endl;
+    std::cin >> password;
+
+    // ifstream reads the text file we inputted into the variable.
+    std::ifstream passfile("clientpass.txt");
+
+    /* If statement that checks if the clientpass.txt file is open and if it is, it'll read through the text file
+     * and check if the inputted username matches the saved username, same for the password. If it does match it'll
+     * say Login Successful, if it doesn't it'll display the error message below the if statement.*/
+    if (passfile.is_open()) {
+        while (passfile >> u >> p) {
+            if (username == u && password == p) {
+                passfile.close();
+                std::cout << "\nLogin Successful" << std::endl;
+                return true;
+            }
+        }
+        passfile.close();
+    }
+    std::cout << "Invalid username or password. Please try again." << std::endl;
+    return false;
+}
+
+// Function to deposit money which takes parameters username and balance.
+void deposit(std::string& username, double& balance) {
+    /* Double variable called amount is set, and the user is prompted to insert the amount to deposit to the account
+     * which is stored into the amount variable.*/
+    double amount;
+    std::cout << "Enter the amount to deposit: ";
+    std::cin >> amount;
+
+    // Update balance
+    balance += amount;
+
+    //ifstream infile reads the file cliendBal2.txt and ofstream outfile creates a file called temp.txt
+    std::ifstream infile("clientBal2.txt");
+    std::ofstream outfile("temp.txt");
+
+    // If statement that checks if both files are open, if so it'' run the code within the conditional statement.
+    if (infile.is_open() && outfile.is_open()) {
+        // String variable called u and a double variable called b.
+        std::string u;
+        double b;
+        /* While loop that checks the lines in the clientBal2.txt file. The conditional statement inside just checks
+         * to see if the username parameter is equal to the username u in the file, if so we add the amount to the b
+         * variable, and we write the changed data to the temp.txt file. We then close both files, delete the old file
+         * , and rename the temp.txt file to clientBal2.txt file. Once this is done we print "deposit successful!". */
+        while (infile >> u >> b) {
+            if (username == u) {
+                b += amount;
+            }
+            outfile << u << " " << b << "\n";
+        }
+        infile.close();
+        outfile.close();
+        remove("clientBal2.txt");
+        rename("temp.txt", "clientBal2.txt");
+        std::cout << "Deposit successful!" << std::endl;
+    }
+    else {
+        std::cerr << "Unable to open file." << std::endl;
+    }
+}
+
+// Function to withdraw money, works exactly like the deposit function except it subtracts the amount.
+void withdraw(std::string& username, double& balance) {
+    double amount;
+    std::cout << "Enter the amount to withdraw: ";
+    std::cin >> amount;
+
+    // Check if sufficient balance
+    if (amount > balance) {
+        std::cout << "Insufficient balance." << std::endl;
+        return;
+    }
+
+    // Update balance
+    balance -= amount;
+
+    std::ifstream infile("clientBal2.txt");
+    std::ofstream outfile("temp.txt");
+
+    if (infile.is_open() && outfile.is_open()) {
+        std::string u;
+        double b;
+        while (infile >> u >> b) {
+            if (username == u) {
+                b -= amount;
+            }
+            outfile << u << " " << b << "\n";
+        }
+        infile.close();
+        outfile.close();
+        remove("clientBal2.txt");
+        rename("temp.txt", "clientBal2.txt");
+        std::cout << "Withdrawal successful!" << std::endl;
+    }
+    else {
+        std::cerr << "Unable to open file." << std::endl;
+    }
+}
+
+void loanSched() {
+
+
+    /* double variables initialized called principle, interestPaid,payment,interest,interestRate,principlePaid,
+     * newPrinciple, and originalPrincp that values are going to be determined later. originalPrincp is set equal
+     * to zero at the start of the program to be used later.*/
+    double principle, interestPaid,payment,interest,interestRate,principlePaid,newPrinciple,originalPrincp = 0;
+
+
+    /* The lines (13-14 & 16-20) are asking for the principle amount, interest amount, and payment amount.
+     * These values are then stored in each of their respective variable. These variables are the principle variable,
+     * interest variable,and the payment variable. We use the originalPrincp variable to store the principle amount,
+     * so we can call it again later on. Line 15 does this storing of the integer. */
+    std:: cout << "What is your principle amount?: "<< std::endl;
+    std:: cin >> principle;
+    originalPrincp += principle;
+    std:: cout << "What is your interest amount?: "<< std::endl;
+    std:: cin >> interest;
+    interestRate = ((interest/100)/12);
+    std:: cout << "What is your payment amount?: " << std::endl;
+    std:: cin >> payment;
+
+
+
+
+    // Lines 24 - 26 are just printing the values that we recently stored and displaying them neatly to the user.
+    std:: cout << "Principle: " << principle << std::endl;
+    std:: cout << "Interest: " << interest << std::endl;
+    std:: cout << "Payment: " << payment <<"\n"<< std::endl;
+
+
+    /*This next line (31) prints to the user the Principle, Initial Paid, Principle Paid, Ending Payment,
+     and Payment Balance. The \t is the tab character which adds spacing to the line making the spacing of the
+     text look neater.*/
+    std:: cout <<"Principle"<<"\t\t"<<"Int. Paid"<< "\t\t"<< "Principle Paid"<< "\t\t"<< "Ending Payment"<< "\t\t"<< "Payment Balance"<< "\t\t\n";
+
+
+    /* This while loop is used to keep updating the information. The parameter its checking is if principle is greater
+     * than 0 if so the program will continue to run until it isn't 0 anymore.*/
+    while (principle > 0) {
+        /* Here we have the interestPaid equal to our principle we set in the beginning multiplied by our interestRate
+         * which was set in line 18. Line 18 makes our set variable into a decimal because the interest is supposed
+         * to be a percentage. Example, if we had 12 percent the equation would make it be ((12/100)/12) which is equal
+         * to .1. This .1 is our interest rate that can be used for the rest of the program. principlePaid is equal to
+         * payment - interest paid. This variable gives us the amount of money that was paid.*/
+        interestPaid = principle * interestRate;
+        principlePaid = payment - interestPaid;
+
+
+        /* This if statement shows that if principlePaid is greater than principle it's going to set the money
+         * the user already paid equal to the principle. For example if the principle was $1 but our principle paid
+         * was $1.50 we would set out principlePaid equal to the $1 dollar because you would be paying more than you
+         * would need to. You would only have to pay the needed amount in this case.*/
+        if (principlePaid > principle){
+            principlePaid = principle;
+        }
+
+
+        /* This newPrinciple variable is used in order to store the newPrinciple that we have. It is our principle
+         * minus our principlePaid. We will use this to display the updated value each time when we print it later.*/
+        newPrinciple = principle - principlePaid;
+
+
+        /* This if statement is saying if the principlePaid is equal to the principle,
+         * we set the payment equal to principle Paid. */
+        if (principlePaid == principle){
+            payment = principlePaid;
+        }
+
+
+        /* These next two lines will print the principle, interestPaid, principlePaid, payment, and newPrinciple
+         * variables. They use the same \t tab feature that was mentioned before to make the code come out neater.*/
+        std:: cout << "------------------------------------------------------------------------------------------------------------------\n";
+        std:: cout<< principle<<"\t\t\t"<< interestPaid<<"\t\t\t"<< principlePaid <<"\t\t\t" << payment <<"\t\t\t"<< newPrinciple<<"\t\t\n\n";
+
+
+        /* At the end of the while loop we set our principle equal to the newPrinciple to update the amount that is
+         * going to be subtracted again at the beginning of the loop.*/
+        principle = newPrinciple;
+    }
+
+
+    /* These next two lines print the total amount of payment by using the originalPrincp variable and adding by the
+     * final payment. This gives us the total amount of payment. The total interest paid is going to be the final
+     * payment in the code.*/
+    std:: cout << "The total amount of payment is " << originalPrincp + payment << std::endl;
+    std:: cout << "The total interest paid is " << payment << std::endl;
+
+}
+
+int main() {
+    /* int variable called choice, string variables called username and password, double variable called balance
+     * set equal to 0.0 and bool variable called loggedIn which is set equal to false.*/
+    int choice;
+    std::string username, password;
+    double balance = 0.0;
+    bool loggedIn = false;
+
+    // Check login
+    do {
+        /* Prompts the user to choose from a list of choices such displayed below. Once one of the available options
+         * are selected then it will run the block of code that is in that selection. We used a switch case in order
+         * to let the user select the option and if something does not match we can use the default case to deal with
+         * not selecting the correct option.*/
+        std::cout << "1. Create Account\n2. Login\nEnter your choice:" << std::endl;
+        std::cin >> choice;
+        switch (choice) {
+            // Case 1 runs the createAccount() function
+            case 1:
+                createAccount();
+                break;
+            /* Case 2 checks to see if you are able to log into your account using the text file, once you are in
+             * the program welcomes you and displays your account balance and offers you another few options, such
+             * as being able to deposit money, withdraw money, amortization schedule, or just exit the program. These
+             * functions only work if you are logged into the account you made.*/
+            case 2:
+                if (login(username, password)) {
+                    loggedIn = true;
+                    std::cout << "Welcome, " << username << "!" << std::endl;
+
+                    // Display account balance
+                    std::ifstream infile("clientBal2.txt");
+                    if (infile.is_open()) {
+                        std::string u;
+                        double b;
+                        while (infile >> u >> b) {
+                            if (username == u) {
+                                balance = b;
+                                break;
+                            }
+                        }
+                        infile.close();
+                    }
+
+                    std::cout << "Your current balance: $" << std::fixed << std::setprecision(2) << balance << std::endl;
+                }
+                break;
+            default:
+                std::cout << "Invalid choice. Please try again." << std::endl;
+        }
+    } while (!loggedIn);
+
+    // Logged-in functionality
+    do {
+        std::cout << "1. Deposit\n2. Withdraw\n3. Payment Plan\n4. Exit\nEnter your choice:" << std::endl;
+        std::cin >> choice;
+        switch (choice) {
+            case 1:
+                deposit(username, balance);
+                break;
+            case 2:
+                withdraw(username, balance);
+                break;
+            case 3:
+                loanSched();
+                return 0;
+            case 4:
+                std::cout << "Exiting..." << std::endl;
+                return 0;
+            default:
+                return true;
+        }
+    }
+    while (true);
+}
+
