@@ -25,3 +25,4 @@ For general C++ programming concepts:
 Brackman Jefferson , 2024, "amortSched", FGCU
 
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/jbrackman18/simplebank/badge)](https://scorecard.dev/viewer/?uri=github.com/jbrackman18/simplebank)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10311/badge)](https://www.bestpractices.dev/projects/10311)
